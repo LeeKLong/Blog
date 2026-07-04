@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllPosts } from '../utils/posts';
 
@@ -31,22 +31,23 @@ const App = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // ================= Canvas 粒子聚合与灰烬飘散动画 =================
   useEffect(() => {
     if (!loading || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    let animationFrameId;
+    const ctx = canvas.getContext('2d') as any;
+    if (!ctx) return;
+    let animationFrameId: any;
     let timeoutId;
     let isActive = true;
-    let particles = [];
+    let particles: any[] = [];
 
     // 鼠标坐标跟踪 (建议 1)
     let mouse = { x: -1000, y: -1000 };
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: any) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
     };
@@ -61,7 +62,22 @@ const App = () => {
 
     // 粒子类重构
     class Particle {
-      constructor(x, y) {
+      originX: number;
+      originY: number;
+      x: number;
+      y: number;
+      baseSize: number;
+      size: number;
+      baseAlpha: number;
+      vx: number;
+      vy: number;
+      vz: number;
+      z: number;
+      isScattered: boolean;
+      ease: number;
+      wind: number;
+
+      constructor(x: any, y: any) {
         this.originX = x;
         this.originY = y;
 
@@ -145,7 +161,7 @@ const App = () => {
         this.size = Math.max(0, this.baseSize * this.z);
       }
 
-      draw(ctx) {
+      draw(ctx: any) {
         // 根据深度调整透明度和颜色
         let currentAlpha = this.baseAlpha;
         if (this.z < 1) {

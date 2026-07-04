@@ -21,7 +21,7 @@ const markdownModules = import.meta.glob('../content/*.md', { query: '?raw', imp
 
 function parseFrontmatter(mdContent: string) {
   const match = mdContent.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) return { attributes: {} as Partial<PostMetadata>, body: mdContent };
+  if (!match) return { attributes: {} as PostMetadata, body: mdContent };
 
   const yamlStr = match[1];
   const body = match[2];

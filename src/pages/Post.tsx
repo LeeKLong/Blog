@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getPostById } from '../utils/posts';
@@ -40,7 +40,6 @@ const Post = () => {
       const progress = Math.max(0, Math.min(1, 1 - distToTop / 60));
       
       const initialW = lineRef.current.offsetWidth;
-      const initialLeft = lineRect.left;
       
       const targetW = document.documentElement.clientWidth;
       const currentWidth = initialW + (targetW - initialW) * progress;

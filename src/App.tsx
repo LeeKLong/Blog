@@ -1,4 +1,4 @@
-import React from 'react';
+// Removed React import
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Post from './pages/Post';
