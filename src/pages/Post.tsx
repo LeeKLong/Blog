@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getPostById } from '../utils/posts';
 
 const Post = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   
   const postData = id ? getPostById(id) : undefined;
   const rawContent = postData ? postData.body : '# 404 NOT FOUND\nFILE CORRUPTED OR MISSING.';
@@ -80,10 +81,10 @@ const Post = () => {
           </Link>
           <span className="font-mono-data text-[9px] tracking-[0.3em] text-[#666] mt-2">DOCUMENTATION</span>
         </div>
-        <Link to="/" className="text-[#888] hover:text-[#E8E8E1] flex items-center gap-2 group/btn transition-colors duration-300 font-mono-data text-[10px] tracking-widest uppercase">
+        <button onClick={() => navigate(-1)} className="text-[#888] hover:text-[#E8E8E1] flex items-center gap-2 group/btn transition-colors duration-300 font-mono-data text-[10px] tracking-widest uppercase cursor-pointer bg-transparent border-none">
           <span className="w-4 h-[1px] bg-[#555] group-hover/btn:w-8 group-hover/btn:bg-[#E8E8E1] transition-all duration-500"></span>
           RETURN
-        </Link>
+        </button>
       </header>
 
       {/* 内容区 */}

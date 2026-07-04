@@ -1,12 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { getAllPosts } from '../utils/posts';
 
 const App = () => {
   const isFirstLoad = useRef(!sessionStorage.getItem('hasSeenIntro')).current;
   const [loading, setLoading] = useState(isFirstLoad);
-  const fadeClass = !isFirstLoad ? 'opacity-100' : (loading ? 'opacity-0' : 'opacity-0 animate-fade-in-up');
+  
+  // Return to home has a quick fade in, first load has the slow scatter animation
+  const fadeClass = !isFirstLoad 
+    ? 'opacity-0 animate-fade-in' 
+    : (loading ? 'opacity-0' : 'opacity-0 animate-fade-in-up');
+    
   const zoomClass = !isFirstLoad ? '' : (loading ? '' : 'animate-slow-zoom');
-  const [activeChannel, setActiveChannel] = useState('ALL SCENES');
+  const [activeChannel, setActiveChannelState] = useState(() => sessionStorage.getItem('activeChannel') || 'ALL SCENES');
+  
+  const setActiveChannel = (channel: string) => {
+    setActiveChannelState(channel);
+    sessionStorage.setItem('activeChannel', channel);
+  };
+
+  useEffect(() => {
+    const savedScroll = sessionStorage.getItem('homeScroll');
+    if (savedScroll) {
+      setTimeout(() => window.scrollTo(0, parseInt(savedScroll, 10)), 50); // slight delay to ensure render
+    }
+    const handleScroll = () => {
+      sessionStorage.setItem('homeScroll', window.scrollY.toString());
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const canvasRef = useRef(null);
 
   // ================= Canvas 粒子聚合与灰烬飘散动画 =================
@@ -292,11 +316,19 @@ const App = () => {
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     .animate-slow-zoom {
       animation: slowZoom 25s ease-out infinite alternate;
     }
     .animate-fade-in-up {
       animation: fadeInUp 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
     }
 
     /* Loading 页面的优雅淡出，时间延长让灰烬消失更自然 */
@@ -404,8 +436,8 @@ const App = () => {
       {/* ================= 核心视觉：暗角与遮幅 ================= */}
       <div className="fixed inset-0 z-[100] pointer-events-none bg-[radial-gradient(circle_at_center,transparent_30%,rgba(2,2,2,0.95)_100%)]"></div>
 
-      <header className={`fixed top-0 left-0 right-0 h-10 md:h-12 bg-[#000] z-[110] border-b border-[#111] px-4 md:px-8 flex justify-between items-center ${fadeClass}`} style={{ animationDelay: '0.4s' }}>
-        <div className="flex items-center gap-3 md:gap-6">
+      <header className={`fixed top-0 left-0 right-0 h-10 md:h-12 bg-[#000] z-[110] border-b border-[#111] px-4 md:px-8 flex justify-between items-center ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '0.4s' : '0s' }}>
+        <div className="flex items-center gap-3 md:gap-6 shrink-0">
           <h1 className="font-serif-display text-sm md:text-base text-[#E8E8E1] hover-flicker cursor-pointer tracking-widest leading-none">
             LEEKLONG
           </h1>
@@ -414,14 +446,14 @@ const App = () => {
           </span>
         </div>
 
-        <div className="flex items-center space-x-4 md:space-x-8 font-mono-data text-[8px] md:text-[9px] tracking-widest uppercase text-[#555] overflow-x-auto no-scrollbar">
+        <div className="flex items-center justify-end flex-1 space-x-5 md:space-x-8 font-mono-data text-[8px] md:text-[9px] tracking-widest uppercase text-[#555] overflow-x-auto no-scrollbar ml-4 pl-4 md:pl-0 mask-image-fade">
           {channels.map(channel => (
             <button
               key={channel}
               onClick={() => setActiveChannel(channel)}
-              className={`transition-colors duration-300 whitespace-nowrap leading-none ${activeChannel === channel ? 'text-[#E8E8E1]' : 'hover:text-[#888]'}`}
+              className={`transition-colors duration-300 whitespace-nowrap h-10 md:h-12 px-1 flex items-center ${activeChannel === channel ? 'text-[#E8E8E1]' : 'hover:text-[#888]'}`}
             >
-              CH: {channel}
+              CH:{channel}
             </button>
           ))}
         </div>
@@ -445,7 +477,7 @@ const App = () => {
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] to-transparent"></div>
 
-          <div className={`relative z-10 px-6 md:px-12 w-full max-w-7xl mx-auto ${fadeClass}`} style={{ animationDelay: '0.8s' }}>
+          <div className={`relative z-10 px-6 md:px-12 w-full max-w-7xl mx-auto ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '0.8s' : '0s' }}>
             <h2 className="font-serif-display text-4xl md:text-5xl text-[#E8E8E1] leading-[1.1] tracking-tight">
               <span className="italic font-light text-[#888]">ABOUT</span> LEEKLONG.
             </h2>
@@ -456,7 +488,7 @@ const App = () => {
           <div className="absolute left-6 md:left-12 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-[#222] to-transparent hidden md:block"></div>
 
           {activeChannel === 'ALL SCENES' ? (
-            <div className={`grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 ${fadeClass}`} style={{ animationDelay: '1s' }}>
+            <div className={`grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '1s' : '0s' }}>
               {/* 左侧：巨型标识与控制台宣言 */}
               <div className="lg:col-span-7 flex flex-col justify-center gap-12">
                 <div>
@@ -522,7 +554,7 @@ const App = () => {
               </div>
             </div>
           ) : (
-            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16 ${fadeClass}`} style={{ animationDelay: '1s' }}>
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16 ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '1s' : '0s' }}>
               {filteredPosts.map((post) => (
                 <article
                   key={post.id}
@@ -582,10 +614,17 @@ const App = () => {
 
                     <div className="flex items-center justify-between font-mono-data text-[9px] tracking-[0.2em] mt-auto pt-4 border-t border-[#1a1a1a]">
                       <span className="text-[#444]">{post.date}</span>
-                      <a href={post.url} target={post.url.startsWith('http') ? '_blank' : '_self'} rel="noreferrer" className="text-[#888] hover:text-[#E8E8E1] flex items-center gap-2 group/btn transition-colors duration-300">
-                        ACCESS
-                        <span className="w-4 h-[1px] bg-[#555] group-hover/btn:w-8 group-hover/btn:bg-[#E8E8E1] transition-all duration-500"></span>
-                      </a>
+                      {post.url.startsWith('http') ? (
+                        <a href={post.url} target="_blank" rel="noreferrer" className="text-[#888] hover:text-[#E8E8E1] flex items-center gap-2 group/btn transition-colors duration-300">
+                          ACCESS
+                          <span className="w-4 h-[1px] bg-[#555] group-hover/btn:w-8 group-hover/btn:bg-[#E8E8E1] transition-all duration-500"></span>
+                        </a>
+                      ) : (
+                        <Link to={post.url} className="text-[#888] hover:text-[#E8E8E1] flex items-center gap-2 group/btn transition-colors duration-300">
+                          ACCESS
+                          <span className="w-4 h-[1px] bg-[#555] group-hover/btn:w-8 group-hover/btn:bg-[#E8E8E1] transition-all duration-500"></span>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </article>
