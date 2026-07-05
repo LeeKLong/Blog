@@ -477,6 +477,11 @@ const App = () => {
             </button>
           ))}
         </div>
+        
+        {/* Mobile Active Channel Indicator */}
+        <div className="md:hidden flex-1 flex justify-end font-mono-data text-[9px] tracking-widest uppercase text-[#E8E8E1] opacity-70">
+          CH:{activeChannel}
+        </div>
       </header>
 
       {/* Mobile Dropdown Nav */}
@@ -523,7 +528,7 @@ const App = () => {
         </header>
 
         <main className="max-w-7xl mx-auto px-6 md:px-12 mt-16 relative">
-          <div className="absolute left-6 md:left-12 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-[#222] to-transparent hidden md:block"></div>
+          <div className="absolute left-6 md:left-12 top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-[#222] to-transparent"></div>
 
           {activeChannel === 'ALL SCENES' ? (
             <div className={`grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '1s' : '0s' }}>
@@ -602,6 +607,17 @@ const App = () => {
                   key={post.id}
                   className="group relative flex flex-col"
                 >
+                  {/* Full Card Link Overlay */}
+                  {post.url.startsWith('http') ? (
+                    <a href={post.url} target="_blank" rel="noreferrer" className="absolute inset-0 z-20">
+                      <span className="sr-only">Go to {post.title}</span>
+                    </a>
+                  ) : (
+                    <Link to={post.url} className="absolute inset-0 z-20">
+                      <span className="sr-only">Go to {post.title}</span>
+                    </Link>
+                  )}
+
                   <div className="overflow-hidden relative mb-6 aspect-square w-full bg-[#050505]">
                     <div className="absolute inset-0 border border-[#111] group-hover:border-[#444] z-20 transition-colors duration-700 pointer-events-none"></div>
 
@@ -654,7 +670,7 @@ const App = () => {
                       {post.excerpt}
                     </p>
 
-                    <div className="flex items-center justify-between font-mono-data text-[9px] tracking-[0.2em] mt-auto pt-4 border-t border-[#1a1a1a]">
+                    <div className="flex items-center justify-between font-mono-data text-[9px] tracking-[0.2em] mt-auto pt-4 border-t border-[#1a1a1a] relative z-30 pointer-events-auto">
                       <span className="text-[#444]">{post.date}</span>
                       {post.url.startsWith('http') ? (
                         <a href={post.url} target="_blank" rel="noreferrer" className="text-[#888] hover:text-[#E8E8E1] flex items-center gap-2 group/btn transition-colors duration-300">

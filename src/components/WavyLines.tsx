@@ -203,7 +203,7 @@ const WavyLines = ({ interactive = true, inverted = false }: { interactive?: boo
         }
         
         const stop1 = gradientRef.current.children[0] as SVGStopElement;
-        stop1.setAttribute('stop-color', `rgba(255, 255, 255, ${currentSpotlightOpacity})`);
+        stop1.setAttribute('stop-opacity', currentSpotlightOpacity.toString());
       }
 
       animationFrameId = requestAnimationFrame(tick);
@@ -225,12 +225,12 @@ const WavyLines = ({ interactive = true, inverted = false }: { interactive?: boo
   }, [interactive]);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+    <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0" style={{ transform: 'translateZ(0)' }}>
       <svg ref={svgRef} className="w-full h-full pointer-events-none">
         <defs>
           <radialGradient ref={gradientRef} id={gradientId} cx="50%" cy="50%" r="400" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="rgba(255, 255, 255, 0)" />
-            <stop offset="100%" stopColor={inverted ? `rgba(255, 255, 255, ${MAX_OPACITY})` : `rgba(255, 255, 255, ${MIN_OPACITY})`} />
+            <stop offset="0%" stopColor="#ffffff" stopOpacity={0} />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity={inverted ? MAX_OPACITY : MIN_OPACITY} />
           </radialGradient>
         </defs>
       </svg>
