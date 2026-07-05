@@ -14,6 +14,7 @@ const App = () => {
     
   const zoomClass = !isFirstLoad ? '' : (loading ? '' : 'animate-slow-zoom');
   const [activeChannel, setActiveChannelState] = useState(() => sessionStorage.getItem('activeChannel') || 'ALL SCENES');
+  const [isNavOpen, setIsNavOpen] = useState(false);
   
   const setActiveChannel = (channel: string) => {
     setActiveChannelState(channel);
@@ -455,15 +456,17 @@ const App = () => {
 
       <header className={`fixed top-0 left-0 right-0 h-10 md:h-12 bg-[#000] z-[110] border-b border-[#111] px-4 md:px-8 flex justify-between items-center ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '0.4s' : '0s' }}>
         <div className="flex items-center gap-3 md:gap-6 shrink-0">
-          <h1 className="font-serif-display text-sm md:text-base text-[#E8E8E1] hover-flicker cursor-pointer tracking-widest leading-none">
+          <h1 onClick={() => setIsNavOpen(!isNavOpen)} className="font-serif-display text-sm md:text-base text-[#E8E8E1] hover-flicker cursor-pointer tracking-widest leading-none flex items-center gap-2">
             LEEKLONG
+            <span className={`md:hidden text-[8px] transition-transform duration-300 ${isNavOpen ? 'rotate-180' : ''}`}>▼</span>
           </h1>
           <span className="font-mono-data text-[8px] md:text-[9px] tracking-[0.3em] text-[#666] hidden sm:block leading-none pt-0.5">
             PERSONAL ARCHIVE
           </span>
         </div>
 
-        <div className="flex items-center justify-end flex-1 space-x-5 md:space-x-8 font-mono-data text-[8px] md:text-[9px] tracking-widest uppercase text-[#555] overflow-x-auto no-scrollbar ml-4 pl-4 md:pl-0 mask-image-fade">
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center justify-end flex-1 space-x-5 md:space-x-8 font-mono-data text-[8px] md:text-[9px] tracking-widest uppercase text-[#555] ml-4 mask-image-fade">
           {channels.map(channel => (
             <button
               key={channel}
@@ -475,9 +478,27 @@ const App = () => {
           ))}
         </div>
       </header>
-      <div className="fixed bottom-0 left-0 right-0 h-10 md:h-12 bg-[#000] z-[110] border-t border-[#111] flex justify-between items-center px-8">
-        <span className="font-mono-data text-[9px] text-[#444] tracking-[0.3em] hidden md:block" style={{ animation: 'flicker 4s infinite' }}>REC ◉ 24 FPS</span>
-        <span className="font-mono-data text-[9px] text-[#444] tracking-[0.3em] hidden md:block">MASTER DIR // VARIOUS</span>
+
+      {/* Mobile Dropdown Nav */}
+      <div className={`fixed top-10 left-0 right-0 bg-[#050505] border-b border-[#111] z-[105] transition-all duration-300 overflow-hidden md:hidden flex flex-col px-4 font-mono-data text-[10px] tracking-widest uppercase text-[#555] ${isNavOpen ? 'py-4 max-h-64 opacity-100' : 'max-h-0 py-0 opacity-0 pointer-events-none'}`}>
+        <div className="flex flex-col space-y-4 py-2">
+          {channels.map(channel => (
+            <button
+              key={channel}
+              onClick={() => {
+                setActiveChannel(channel);
+                setIsNavOpen(false);
+              }}
+              className={`transition-colors text-left ${activeChannel === channel ? 'text-[#E8E8E1] border-l-2 border-[#E8E8E1] pl-2' : 'hover:text-[#888] pl-2'}`}
+            >
+              CH:{channel}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 h-10 md:h-12 bg-[#000] z-[110] border-t border-[#111] flex justify-between items-center px-4 md:px-8">
+        <span className="font-mono-data text-[8px] md:text-[9px] text-[#444] tracking-[0.3em] block" style={{ animation: 'flicker 4s infinite' }}>REC ◉ 24 FPS</span>
+        <span className="font-mono-data text-[8px] md:text-[9px] text-[#444] tracking-[0.3em] block">MASTER DIR // VARIOUS</span>
       </div>
 
 

@@ -69,7 +69,7 @@ const Post = () => {
       
       {/* 动态波浪线层 */}
       <div className="fixed inset-0 pointer-events-none z-0 mix-blend-screen opacity-50">
-        <WavyLines />
+        <WavyLines inverted={true} />
       </div>
 
       {/* 噪点与光影层 */}

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useId } from 'react';
 
-const WavyLines = ({ interactive = true }: { interactive?: boolean }) => {
+const MAX_OPACITY = 0.25;
+const MIN_OPACITY = 0.02;
+
+const WavyLines = ({ interactive = true, inverted = false }: { interactive?: boolean, inverted?: boolean }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const gradientRef = useRef<SVGRadialGradientElement>(null);
@@ -21,7 +24,7 @@ const WavyLines = ({ interactive = true }: { interactive?: boolean }) => {
     let paths: SVGPathElement[] = [];
     let animationFrameId: number;
     let lastMoveTime = 0;
-    let currentSpotlightOpacity = interactive ? 0.05 : 0.6;
+    let currentSpotlightOpacity = interactive ? MIN_OPACITY : MAX_OPACITY;
 
     const setSize = () => {
       bounding = container.getBoundingClientRect();
@@ -187,16 +190,16 @@ const WavyLines = ({ interactive = true }: { interactive?: boolean }) => {
           
           const now = Date.now();
           const timeSinceLastMove = now - lastMoveTime;
-          let targetOpacity = 0.6; 
+          let targetOpacity = inverted ? MIN_OPACITY : MAX_OPACITY; 
           if (timeSinceLastMove > 2000 || lastMoveTime === 0) {
-            targetOpacity = 0.03;
+            targetOpacity = inverted ? MAX_OPACITY : MIN_OPACITY;
           }
 
           currentSpotlightOpacity += (targetOpacity - currentSpotlightOpacity) * 0.03;
         } else {
           gradientRef.current.setAttribute('cx', (bounding.width / 2).toString());
           gradientRef.current.setAttribute('cy', (bounding.height / 2).toString());
-          currentSpotlightOpacity = 0.6;
+          currentSpotlightOpacity = MAX_OPACITY;
         }
         
         const stop1 = gradientRef.current.children[0] as SVGStopElement;
@@ -227,7 +230,7 @@ const WavyLines = ({ interactive = true }: { interactive?: boolean }) => {
         <defs>
           <radialGradient ref={gradientRef} id={gradientId} cx="50%" cy="50%" r="400" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="rgba(255, 255, 255, 0)" />
-            <stop offset="100%" stopColor="rgba(255, 255, 255, 0.03)" />
+            <stop offset="100%" stopColor={inverted ? `rgba(255, 255, 255, ${MAX_OPACITY})` : `rgba(255, 255, 255, ${MIN_OPACITY})`} />
           </radialGradient>
         </defs>
       </svg>
