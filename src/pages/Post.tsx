@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getPostById } from '../utils/posts';
+import WavyLines from '../components/WavyLines';
 
 const Post = () => {
   const { id } = useParams<{ id: string }>();
@@ -66,6 +67,11 @@ const Post = () => {
   return (
     <div className="min-h-screen bg-[#050505] text-[#D1D1C7] font-sans selection:bg-[#E8E8E1] selection:text-[#050505] relative overflow-x-hidden">
       
+      {/* 动态波浪线层 */}
+      <div className="fixed inset-0 pointer-events-none z-0 mix-blend-screen opacity-50">
+        <WavyLines />
+      </div>
+
       {/* 噪点与光影层 */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-overlay" 
            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}>

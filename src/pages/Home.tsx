@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getAllPosts } from '../utils/posts';
+import WavyLines from '../components/WavyLines';
 
 const App = () => {
   const isFirstLoad = useRef(!sessionStorage.getItem('hasSeenIntro')).current;
@@ -506,7 +507,11 @@ const App = () => {
           {activeChannel === 'ALL SCENES' ? (
             <div className={`grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '1s' : '0s' }}>
               {/* 左侧：巨型标识与控制台宣言 */}
-              <div className="lg:col-span-7 flex flex-col justify-center gap-12">
+              <div className="lg:col-span-7 flex flex-col justify-center gap-12 relative">
+                {/* 动态波浪线层 */}
+                <div className="absolute inset-0 z-[-1] opacity-50 mix-blend-screen pointer-events-none -m-12">
+                  <WavyLines interactive={false} />
+                </div>
                 <div>
                   <h3 className="font-mono-data text-[#555] text-[10px] tracking-widest mb-6 border-l-2 border-[#E8E8E1] pl-3">
                     SYS.IDENT // OVERRIDE
