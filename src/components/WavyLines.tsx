@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useId } from 'react';
 
 const WavyLines = ({ interactive = true }: { interactive?: boolean }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const gradientRef = useRef<SVGRadialGradientElement>(null);
+  const gradientId = `spotlight-${useId().replace(/:/g, '')}`;
 
   useEffect(() => {
     if (!containerRef.current || !svgRef.current) return;
@@ -60,7 +61,7 @@ const WavyLines = ({ interactive = true }: { interactive?: boolean }) => {
 
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.style.fill = 'none';
-        path.style.stroke = 'url(#spotlight)';
+        path.style.stroke = `url(#${gradientId})`;
         path.style.strokeWidth = '1px';
         svg.appendChild(path);
         paths.push(path);
@@ -224,7 +225,7 @@ const WavyLines = ({ interactive = true }: { interactive?: boolean }) => {
     <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
       <svg ref={svgRef} className="w-full h-full pointer-events-none">
         <defs>
-          <radialGradient ref={gradientRef} id="spotlight" cx="50%" cy="50%" r="400px" gradientUnits="userSpaceOnUse">
+          <radialGradient ref={gradientRef} id={gradientId} cx="50%" cy="50%" r="400" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="rgba(255, 255, 255, 0)" />
             <stop offset="100%" stopColor="rgba(255, 255, 255, 0.03)" />
           </radialGradient>
