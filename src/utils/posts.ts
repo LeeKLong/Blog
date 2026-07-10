@@ -1,3 +1,5 @@
+import fm from 'front-matter';
+
 export interface PostMetadata {
   id: string;
   title: string;
@@ -19,30 +21,11 @@ export interface PostData {
 
 const markdownModules = import.meta.glob('../content/*.md', { query: '?raw', import: 'default', eager: true });
 
-function parseFrontmatter(mdContent: string) {
-  const match = mdContent.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) return { attributes: {} as PostMetadata, body: mdContent };
-
-  const yamlStr = match[1];
-  const body = match[2];
-  const attributes: Record<string, string> = {};
-
-  yamlStr.split(/\r?\n/).forEach(line => {
-    const colonIndex = line.indexOf(':');
-    if (colonIndex !== -1) {
-      const key = line.slice(0, colonIndex).trim();
-      const value = line.slice(colonIndex + 1).trim();
-      attributes[key] = value;
-    }
-  });
-
-  return { attributes: attributes as unknown as PostMetadata, body };
-}
-
 export const getAllPosts = (): PostData[] => {
   return Object.values(markdownModules).map((markdownContent) => {
-    const parsed = parseFrontmatter(markdownContent as string);
-    const attributes = parsed.attributes;
+    // 使用专为前端设计的 front-matter 库
+    const { attributes: data, body: content } = fm(markdownContent as string);
+    const attributes = data as PostMetadata;
     
     attributes.hasCustomImage = !!attributes.image;
     attributes.imageUrl = attributes.image;
@@ -50,7 +33,7 @@ export const getAllPosts = (): PostData[] => {
     
     return {
       attributes,
-      body: parsed.body
+      body: content
     };
   });
 };

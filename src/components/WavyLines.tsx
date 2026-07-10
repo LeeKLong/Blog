@@ -8,6 +8,16 @@ const WavyLines = ({ interactive = true, inverted = false }: { interactive?: boo
   const svgRef = useRef<SVGSVGElement>(null);
   const gradientRef = useRef<SVGRadialGradientElement>(null);
   const gradientId = `spotlight-${useId().replace(/:/g, '')}`;
+  const isVisibleRef = useRef(true);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
+    }, { rootMargin: '200px' });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current || !svgRef.current) return;
@@ -66,6 +76,7 @@ const WavyLines = ({ interactive = true, inverted = false }: { interactive?: boo
         path.style.fill = 'none';
         path.style.stroke = `url(#${gradientId})`;
         path.style.strokeWidth = '1px';
+        path.style.strokeDasharray = '4 4'; // 虚线效果
         svg.appendChild(path);
         paths.push(path);
       }
@@ -162,48 +173,50 @@ const WavyLines = ({ interactive = true, inverted = false }: { interactive?: boo
     };
 
     const tick = (time: number) => {
-      if (interactive) {
-        mouse.sx += (mouse.x - mouse.sx) * 0.1;
-        mouse.sy += (mouse.y - mouse.sy) * 0.1;
-
-        const dx = mouse.x - mouse.lx;
-        const dy = mouse.y - mouse.ly;
-        const d = Math.hypot(dx, dy);
-
-        mouse.v = d;
-        mouse.vs += (d - mouse.vs) * 0.1;
-        mouse.vs = Math.min(100, mouse.vs);
-
-        mouse.lx = mouse.x;
-        mouse.ly = mouse.y;
-
-        mouse.a = Math.atan2(dy, dx);
-      }
-
-      movePoints();
-      drawLines(time);
-
-      if (gradientRef.current) {
+      if (isVisibleRef.current) {
         if (interactive) {
-          gradientRef.current.setAttribute('cx', mouse.x.toString());
-          gradientRef.current.setAttribute('cy', mouse.y.toString());
-          
-          const now = Date.now();
-          const timeSinceLastMove = now - lastMoveTime;
-          let targetOpacity = inverted ? MIN_OPACITY : MAX_OPACITY; 
-          if (timeSinceLastMove > 2000 || lastMoveTime === 0) {
-            targetOpacity = inverted ? MAX_OPACITY : MIN_OPACITY;
-          }
+          mouse.sx += (mouse.x - mouse.sx) * 0.1;
+          mouse.sy += (mouse.y - mouse.sy) * 0.1;
 
-          currentSpotlightOpacity += (targetOpacity - currentSpotlightOpacity) * 0.03;
-        } else {
-          gradientRef.current.setAttribute('cx', (bounding.width / 2).toString());
-          gradientRef.current.setAttribute('cy', (bounding.height / 2).toString());
-          currentSpotlightOpacity = MAX_OPACITY;
+          const dx = mouse.x - mouse.lx;
+          const dy = mouse.y - mouse.ly;
+          const d = Math.hypot(dx, dy);
+
+          mouse.v = d;
+          mouse.vs += (d - mouse.vs) * 0.1;
+          mouse.vs = Math.min(100, mouse.vs);
+
+          mouse.lx = mouse.x;
+          mouse.ly = mouse.y;
+
+          mouse.a = Math.atan2(dy, dx);
         }
-        
-        const stop1 = gradientRef.current.children[0] as SVGStopElement;
-        stop1.setAttribute('stop-opacity', currentSpotlightOpacity.toString());
+
+        movePoints();
+        drawLines(time);
+
+        if (gradientRef.current) {
+          if (interactive) {
+            gradientRef.current.setAttribute('cx', mouse.x.toString());
+            gradientRef.current.setAttribute('cy', mouse.y.toString());
+            
+            const now = Date.now();
+            const timeSinceLastMove = now - lastMoveTime;
+            let targetOpacity = inverted ? MIN_OPACITY : MAX_OPACITY; 
+            if (timeSinceLastMove > 2000 || lastMoveTime === 0) {
+              targetOpacity = inverted ? MAX_OPACITY : MIN_OPACITY;
+            }
+
+            currentSpotlightOpacity += (targetOpacity - currentSpotlightOpacity) * 0.03;
+          } else {
+            gradientRef.current.setAttribute('cx', (bounding.width / 2).toString());
+            gradientRef.current.setAttribute('cy', (bounding.height / 2).toString());
+            currentSpotlightOpacity = MAX_OPACITY;
+          }
+          
+          const stop1 = gradientRef.current.children[0] as SVGStopElement;
+          stop1.setAttribute('stop-opacity', currentSpotlightOpacity.toString());
+        }
       }
 
       animationFrameId = requestAnimationFrame(tick);

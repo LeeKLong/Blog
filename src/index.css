@@ -1,2 +1,103 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@keyframes slowZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.15); }
+}
+
+@keyframes scratch {
+  0%, 100% { transform: translateX(0); opacity: 0; }
+  10% { transform: translateX(-15vw); opacity: 0.1; }
+  11% { transform: translateX(-15vw); opacity: 0; }
+  30% { transform: translateX(20vw); opacity: 0; }
+  31% { transform: translateX(20vw); opacity: 0.08; }
+  32% { transform: translateX(20vw); opacity: 0; }
+  60% { transform: translateX(-5vw); opacity: 0; }
+  61% { transform: translateX(-5vw); opacity: 0.15; }
+  63% { transform: translateX(-5vw); opacity: 0; }
+  80% { transform: translateX(35vw); opacity: 0.1; }
+  82% { transform: translateX(35vw); opacity: 0; }
+}
+
+@keyframes scanlineBand {
+  0% { top: -20%; opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { top: 120%; opacity: 0; }
+}
+
+@keyframes horizontalFlicker {
+  0%, 100% { top: 0%; opacity: 0; }
+  15% { top: 15%; opacity: 0.8; }
+  18% { top: 15%; opacity: 0; }
+  55% { top: 65%; opacity: 0; }
+  60% { top: 75%; opacity: 0.7; }
+  65% { top: 75%; opacity: 0; }
+  85% { top: 45%; opacity: 0.5; }
+  88% { top: 45%; opacity: 0; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-slow-zoom {
+  animation: slowZoom 25s ease-out infinite alternate;
+}
+.animate-fade-in-up {
+  animation: fadeInUp 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Loading 页面的优雅淡出，时间延长让灰烬消失更自然 */
+.loading-container {
+  transition: opacity 2s ease-out, visibility 2s ease-out;
+}
+.loading-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@keyframes flicker {
+  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+  20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.3; }
+}
+.hover-flicker:hover {
+  animation: flicker 2s infinite;
+}
+
+.group:hover .fx-scanline {
+  animation: scanlineBand 1.5s linear infinite;
+}
+
+.group:hover .fx-flicker {
+  animation: horizontalFlicker 2.5s infinite;
+}
+
+.group:hover .fx-scratch {
+  animation: scratch 3s infinite;
+}
+
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.font-serif-display {
+  font-family: "Playfair Display", "Noto Serif SC", "Songti SC", serif;
+}
+.font-mono-data {
+  font-family: "Courier New", Courier, monospace;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #050505; }
+::-webkit-scrollbar-thumb { background: #222; }

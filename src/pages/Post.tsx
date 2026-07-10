@@ -1,5 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/atom-one-dark.css';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getPostById } from '../utils/posts';
 import WavyLines from '../components/WavyLines';
@@ -123,7 +126,7 @@ const Post = () => {
           prose-blockquote:border-l-[#333] prose-blockquote:bg-[#0a0a0c] prose-blockquote:py-1 prose-blockquote:pr-4 prose-blockquote:text-[#888] prose-blockquote:font-serif-display prose-blockquote:not-italic
           prose-img:rounded-sm prose-img:border prose-img:border-[#1a1a1a] prose-img:opacity-90 hover:prose-img:opacity-100 prose-img:transition-opacity
         ">
-          <ReactMarkdown>{bodyContent}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{bodyContent}</ReactMarkdown>
         </article>
       </main>
 
