@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "framer-motion": "^12.42.2",
     "front-matter": "^4.0.2",
     "highlight.js": "^11.11.1",
     "lucide-react": "^1.24.0",

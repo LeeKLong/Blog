@@ -76,7 +76,6 @@ const WavyLines = ({ interactive = true, inverted = false }: { interactive?: boo
         path.style.fill = 'none';
         path.style.stroke = `url(#${gradientId})`;
         path.style.strokeWidth = '1px';
-        path.style.strokeDasharray = '4 4'; // 虚线效果
         svg.appendChild(path);
         paths.push(path);
       }
