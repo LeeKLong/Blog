@@ -86,25 +86,40 @@ const Home = () => {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isNavOpen) return;
     touchStartX.current = e.targetTouches[0].clientX;
     touchStartY.current = e.targetTouches[0].clientY;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null) return;
+    if (touchStartX.current === null || touchStartY.current === null || isNavOpen) return;
     
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
     
     const diffX = touchStartX.current - touchEndX;
     const diffY = touchStartY.current - touchEndY;
+    
+    const isScrollableArea = (e.target as HTMLElement).closest('.swipe-ignore');
 
-    // 如果横向滑动距离大于纵向，并且横向滑动超过 50px，则认为是有效滑动
+    // 横向滑动优先
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
       if (diffX > 0) {
         setSlideDirection('right');
         setActiveIndex(prev => (prev + 1) % displayItems.length);
       } else {
+        setSlideDirection('left');
+        setActiveIndex(prev => (prev - 1 + displayItems.length) % displayItems.length);
+      }
+    } 
+    // 纵向滑动（在非内部滚动区域）
+    else if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 50 && !isScrollableArea) {
+      if (diffY > 0) {
+        // 向上滑 -> 下一张
+        setSlideDirection('right');
+        setActiveIndex(prev => (prev + 1) % displayItems.length);
+      } else {
+        // 向下滑 -> 上一张
         setSlideDirection('left');
         setActiveIndex(prev => (prev - 1 + displayItems.length) % displayItems.length);
       }
@@ -217,9 +232,9 @@ const Home = () => {
         </div>
       </header>
 
-      {/* Mobile Dropdown Nav */}
-      <div className={`absolute top-12 left-0 right-0 bg-[#050505]/90 backdrop-blur-md border-b border-[#111] z-[105] transition-all duration-300 overflow-hidden md:hidden flex flex-col px-6 font-mono-data text-[11px] tracking-widest uppercase text-[#555] ${isNavOpen ? 'py-4 max-h-64 opacity-100' : 'max-h-0 py-0 opacity-0 pointer-events-none'}`}>
-        <div className="flex flex-col space-y-4 py-2">
+      {/* Mobile Fullscreen Nav */}
+      <div className={`fixed inset-0 pt-24 bg-[#050505]/95 backdrop-blur-xl z-[105] transition-all duration-300 overflow-hidden md:hidden flex flex-col px-8 font-mono-data tracking-widest uppercase text-[#555] ${isNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="flex flex-col space-y-8 mt-10">
           {channels.map(channel => (
             <button
               key={channel}
@@ -227,7 +242,7 @@ const Home = () => {
                 setActiveChannel(channel);
                 setIsNavOpen(false);
               }}
-              className={`transition-colors text-left ${activeChannel === channel ? 'text-[#E8E8E1] border-l-2 border-[#E8E8E1] pl-2' : 'hover:text-[#888] pl-2'}`}
+              className={`transition-colors text-left text-xl ${activeChannel === channel ? 'text-[#E8E8E1] border-l-4 border-[#E8E8E1] pl-4' : 'text-[#888] pl-4'}`}
             >
               CH:{channel}
             </button>
@@ -356,7 +371,7 @@ const Home = () => {
                   </div>
 
                   {/* Right: Content details */}
-                  <div className="w-full md:w-1/2 flex flex-col p-6 md:p-12 relative z-10 bg-[#050505]/60 overflow-y-auto">
+                  <div className="w-full md:w-1/2 flex flex-col p-6 md:p-12 relative z-10 bg-[#050505]/60 overflow-y-auto swipe-ignore">
                     <div className="font-mono-data text-[10px] md:text-[11px] tracking-[0.2em] text-[#555] mb-4 md:mb-6 flex items-center justify-between">
                       <span>ID: {currentItem.id}</span>
                       <span className={`flex items-center gap-2 ${currentItem.status === 'ONLINE' ? 'text-[#a3c2a4]' : (currentItem.status === 'EXPERIMENTAL' ? 'text-[#c2a381]' : 'text-[#666]')}`}>
@@ -414,7 +429,7 @@ const Home = () => {
       </div>
 
       {/* Footer / Rec Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-10 md:h-12 bg-[#000] z-[110] border-t border-[#111] flex justify-between items-center px-6 md:px-10">
+      <div className="hidden md:flex absolute bottom-0 left-0 right-0 h-10 md:h-12 bg-[#000] z-[110] border-t border-[#111] justify-between items-center px-6 md:px-10">
         <span className="font-mono-data text-[9px] md:text-[10px] text-[#444] tracking-[0.3em] block" style={{ animation: 'flicker 4s infinite' }}>REC ◉ 24 FPS</span>
         <span className="font-mono-data text-[9px] md:text-[10px] text-[#444] tracking-[0.3em] block">MASTER DIR // HYBRID ARCHIVE</span>
       </div>
