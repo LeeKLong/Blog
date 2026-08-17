@@ -1,14 +1,38 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="LeeKLong_LOGO.svg" />
-    <link rel="apple-touch-icon" href="LeeKLong_LOGO.svg" />
+    <link rel="icon" type="image/svg+xml" href="LEEKLONG.svg" />
+    <link rel="apple-touch-icon" href="LEEKLONG.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LEEKLONG // PERSONAL ARCHIVE</title>
+    <meta name="theme-color" content="#eef2f5" />
+    <title>LEEKLONG // ENDFIELD PORTAL</title>
+
+    <link rel="preconnect" href="https://fonts.loli.net">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Orbitron:wght@600;800;900&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- APlayer & MetingJS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+    
+    <script>
+      (function() {
+        const saved = localStorage.getItem('endfield_theme');
+        const isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark', 'dark-mode');
+        } else {
+          document.documentElement.classList.remove('dark', 'dark-mode');
+        }
+      })();
+    </script>
   </head>
-  <body>
+  <body class="bg-endfield-bg text-endfield-text font-sans antialiased min-h-screen overflow-x-hidden selection:bg-endfield-yellow selection:text-black transition-colors duration-300">
     <div id="root"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

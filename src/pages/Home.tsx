@@ -1,440 +1,159 @@
-import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllPosts } from '../utils/posts';
-import WavyLines from '../components/WavyLines';
-import IntroCanvas from '../components/IntroCanvas';
-import { Shader, Swirl, ChromaFlow, FlutedGlass } from 'shaders/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
-const Home = () => {
-  const isFirstLoad = useRef(!sessionStorage.getItem('hasSeenIntro')).current;
-  const [loading, setLoading] = useState(isFirstLoad);
-  
-  const [activeChannel, setActiveChannelState] = useState(() => sessionStorage.getItem('activeChannel') || 'ALL SCENES');
-  const [isNavOpen, setIsNavOpen] = useState(false);
-  
-  const setActiveChannel = (channel: string) => {
-    setActiveChannelState(channel);
-    sessionStorage.setItem('activeChannel', channel);
-  };
-
-  // 混合类型文章数据
-  const rawPosts = getAllPosts();
-
-  const processedPosts = rawPosts.map(post => {
-    let imageUrl = post.attributes.image;
-    let hasCustomImage = true;
-
-    // 匹配 Markdown 格式图片: ![alt](url)
-    const imgMatch = post.body.match(/!\[.*?\]\((.*?)\)/);
-    if (imgMatch) {
-      imageUrl = imgMatch[1];
-    } else if (!imageUrl) {
-      imageUrl = '';
-      hasCustomImage = false;
-    }
-
-    return {
-      id: post.attributes.id,
-      date: post.attributes.date,
-      type: post.attributes.type,
-      title: post.attributes.title,
-      subtitle: post.attributes.subtitle,
-      excerpt: post.attributes.excerpt,
-      status: post.attributes.status,
-      url: post.attributes.url || `/post/${post.attributes.id}`,
-      imageUrl,
-      hasCustomImage
-    };
-  });
-
-  const channels = ['ALL SCENES', 'PROJECTS', 'AI_LAB', 'LIFE_LOG'];
-
-  const introItem = { isIntro: true, id: 'intro', type: 'INTRO' };
-  
-  const displayItems = activeChannel === 'ALL SCENES'
-    ? [introItem, ...processedPosts]
-    : processedPosts.filter(post => post.type === activeChannel);
-
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
-  const lastWheelTime = useRef<number>(0);
-  
-  // Touch Event Refs
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
+export default function Home() {
+  const [reposCount, setReposCount] = useState<number | string>('--');
+  const commitsCount = '--'; // Total commits usually requires a GraphQL token to fetch dynamically
 
   useEffect(() => {
-    setActiveIndex(0);
-  }, [activeChannel]);
-
-  const handleWheel = (e: React.WheelEvent) => {
-    if (displayItems.length <= 1) return;
-    const now = Date.now();
-    if (now - lastWheelTime.current < 600) return; // 600ms 防抖
-
-    if (Math.abs(e.deltaY) > 20) {
-      if (e.deltaY > 0) {
-        setSlideDirection('right');
-        setActiveIndex(prev => (prev + 1) % displayItems.length);
-      } else {
-        setSlideDirection('left');
-        setActiveIndex(prev => (prev - 1 + displayItems.length) % displayItems.length);
-      }
-      lastWheelTime.current = now;
-    }
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (isNavOpen) return;
-    touchStartX.current = e.targetTouches[0].clientX;
-    touchStartY.current = e.targetTouches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null || isNavOpen) return;
-    
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    
-    const diffX = touchStartX.current - touchEndX;
-    const diffY = touchStartY.current - touchEndY;
-    
-    const isScrollableArea = (e.target as HTMLElement).closest('.swipe-ignore');
-
-    // 横向滑动优先
-    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-      if (diffX > 0) {
-        setSlideDirection('right');
-        setActiveIndex(prev => (prev + 1) % displayItems.length);
-      } else {
-        setSlideDirection('left');
-        setActiveIndex(prev => (prev - 1 + displayItems.length) % displayItems.length);
-      }
-    } 
-    // 纵向滑动（在非内部滚动区域）
-    else if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 50 && !isScrollableArea) {
-      if (diffY > 0) {
-        // 向上滑 -> 下一张
-        setSlideDirection('right');
-        setActiveIndex(prev => (prev + 1) % displayItems.length);
-      } else {
-        // 向下滑 -> 上一张
-        setSlideDirection('left');
-        setActiveIndex(prev => (prev - 1 + displayItems.length) % displayItems.length);
-      }
-    }
-    
-    touchStartX.current = null;
-    touchStartY.current = null;
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (displayItems.length <= 1) return;
-      const now = Date.now();
-      if (now - lastWheelTime.current < 600) return;
-
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        setSlideDirection('right');
-        setActiveIndex(prev => (prev + 1) % displayItems.length);
-        lastWheelTime.current = now;
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        setSlideDirection('left');
-        setActiveIndex(prev => (prev - 1 + displayItems.length) % displayItems.length);
-        lastWheelTime.current = now;
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [displayItems.length]);
-
-  const slideVariants = {
-    enter: (direction: 'left' | 'right') => ({
-      x: direction === 'right' ? 200 : -200,
-      opacity: 0,
-      scale: 0.95,
-      filter: 'blur(8px)'
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      filter: 'blur(0px)',
-      transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
-    },
-    exit: (direction: 'left' | 'right') => ({
-      x: direction === 'right' ? -200 : 200,
-      opacity: 0,
-      scale: 0.95,
-      filter: 'blur(8px)',
-      transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
-    })
-  };
-
-  const fadeClass = !isFirstLoad 
-    ? 'opacity-0 animate-fade-in' 
-    : (loading ? 'opacity-0' : 'opacity-0 animate-fade-in-up');
-
-  const currentItem = displayItems[activeIndex] as any;
+    // Fetch GitHub Public Repositories Count
+    fetch('https://api.github.com/users/LeeKLong')
+      .then(res => res.json())
+      .then(data => {
+        if (data.public_repos !== undefined) {
+          setReposCount(data.public_repos);
+        }
+      })
+      .catch(err => console.error('Failed to fetch GitHub stats:', err));
+  }, []);
 
   return (
-    <div 
-      className="relative h-[100dvh] w-full bg-[#0A0A0A] text-[#D1D1C7] font-sans selection:bg-[#E8E8E1] selection:text-[#0A0A0A] overflow-hidden flex flex-col"
-      onWheel={handleWheel}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* ================= 粒子 Loading 界面 ================= */}
-      <IntroCanvas loading={loading} onComplete={() => setLoading(false)} />
-      {/* ======================================================= */}
+    <main className="relative z-10">
+      {/* ============ HERO ============ */}
+      <section id="hero" className="relative flex flex-col justify-center min-h-[calc(100vh-44px)] overflow-hidden">
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 py-14 grid lg:grid-cols-12 gap-10 items-center">
 
-      {/* Background Shader */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-40 mix-blend-screen [&>div]:!w-full [&>div]:!h-full [&_canvas]:!w-full [&_canvas]:!h-full [&_canvas]:!object-cover">
-        {!loading && (
-          <Shader>
-            <Swirl colorA="#111111" colorB="#050505" detail={1.7} />
-            <ChromaFlow baseColor="#0a0a0a" downColor="#222222" leftColor="#151515" rightColor="#1a1a1a" upColor="#2a2a2a" momentum={13} radius={3.5} />
-            <FlutedGlass aberration={0.3} angle={31} frequency={8} highlight={0.05} highlightSoftness={0} lightAngle={-90} refraction={4} shape="rounded" softness={1} speed={0.1} />
-          </Shader>
-        )}
-      </div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(2,2,2,0.95)_100%)] z-[1] pointer-events-none"></div>
+          {/* Left: Intro */}
+          <div className="lg:col-span-7">
+            <div data-reveal className="text-xs font-tech text-endfield-muted tracking-widest flex items-center gap-2">
+              <span className="w-2 h-2 bg-endfield-yellow border border-endfield-dark inline-block"></span>
+              // 个人门户 PERSONAL PORTAL — 终端在线
+            </div>
 
-      {/* Header */}
-      <header className={`absolute top-0 left-0 right-0 h-12 md:h-16 bg-transparent z-[110] border-b border-[#111] px-6 md:px-10 flex justify-between items-center ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '0.4s' : '0s' }}>
-        <div className="flex items-center gap-3 md:gap-6 shrink-0">
-          <h1 onClick={() => setIsNavOpen(!isNavOpen)} className="font-serif-display text-sm md:text-lg text-[#E8E8E1] hover-flicker cursor-pointer tracking-widest leading-none flex items-center gap-2">
-            LEEKLONG
-            <span className={`md:hidden text-[8px] transition-transform duration-300 ${isNavOpen ? 'rotate-180' : ''}`}>▼</span>
-          </h1>
-          <span className="font-mono-data text-[8px] md:text-[10px] tracking-[0.3em] text-[#666] hidden sm:block leading-none pt-0.5">
-            PERSONAL ARCHIVE
-          </span>
-        </div>
+            <h1 data-reveal className="mt-5 text-5xl sm:text-6xl xl:text-7xl font-black text-endfield-dark tracking-tight leading-none">
+              LEEKLONG
+            </h1>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center justify-end flex-1 space-x-5 md:space-x-8 font-mono-data text-[9px] md:text-[11px] tracking-widest uppercase text-[#555] ml-4 mask-image-fade">
-          {channels.map(channel => (
-            <button
-              key={channel}
-              onClick={() => setActiveChannel(channel)}
-              className={`transition-colors duration-300 whitespace-nowrap h-10 md:h-12 px-1 flex items-center ${activeChannel === channel ? 'text-[#E8E8E1]' : 'hover:text-[#888]'}`}
-            >
-              CH:{channel}
-            </button>
-          ))}
-        </div>
-        
-        {/* Mobile Active Channel Indicator */}
-        <div className="md:hidden flex-1 flex justify-end font-mono-data text-[10px] tracking-widest uppercase text-[#E8E8E1] opacity-70">
-          CH:{activeChannel}
-        </div>
-      </header>
+            <div data-reveal className="mt-4 inline-flex items-center gap-2 font-title font-bold tracking-[0.25em] text-endfield-dark">
+              <span className="bg-endfield-dark text-endfield-yellow px-2 py-1 text-xs font-tech">ENDFIELD</span>
+              <span className="text-xl sm:text-2xl">OPERATOR</span>
+            </div>
 
-      {/* Mobile Fullscreen Nav */}
-      <div className={`fixed inset-0 pt-24 bg-[#050505]/95 backdrop-blur-xl z-[105] transition-all duration-300 overflow-hidden md:hidden flex flex-col px-8 font-mono-data tracking-widest uppercase text-[#555] ${isNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-        <div className="flex flex-col space-y-8 mt-10">
-          {channels.map(channel => (
-            <button
-              key={channel}
-              onClick={() => {
-                setActiveChannel(channel);
-                setIsNavOpen(false);
-              }}
-              className={`transition-colors text-left text-xl ${activeChannel === channel ? 'text-[#E8E8E1] border-l-4 border-[#E8E8E1] pl-4' : 'text-[#888] pl-4'}`}
-            >
-              CH:{channel}
-            </button>
-          ))}
-        </div>
-      </div>
+            <p data-reveal className="mt-5 max-w-xl text-sm sm:text-base text-endfield-text/80 leading-relaxed font-sans">
+              大学牲一枚。热爱看番、音乐、交互设计，以及 旮旯干木。
+            </p>
 
-      {/* Main Slider Content */}
-      <main className={`flex-1 w-full relative z-[20] flex items-center justify-center pt-16 pb-16 ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '0.8s' : '0s' }}>
-        <AnimatePresence custom={slideDirection} mode="wait">
-          {displayItems.length > 0 && (
-            <motion.div
-              key={currentItem.id}
-              custom={slideDirection}
-              variants={slideVariants as any}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="absolute inset-x-0 inset-y-16 md:inset-y-24 px-6 md:px-16 flex items-center justify-center"
-            >
-              {currentItem.isIntro ? (
-                /* === 第一张卡片：个人介绍 === */
-                <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-12 relative h-full max-h-[70vh] items-center">
-                  <div className="absolute inset-0 z-[-1] opacity-50 mix-blend-screen pointer-events-none -m-12">
-                    <WavyLines interactive={false} />
-                  </div>
-                  {/* 左侧：巨型标识与控制台宣言 */}
-                  <div className="lg:col-span-7 flex flex-col justify-center gap-8 md:gap-12 relative z-10">
-                    <div>
-                      <h3 className="font-mono-data text-[#555] text-[11px] tracking-widest mb-6 border-l-2 border-[#E8E8E1] pl-3">
-                        SYS.IDENT // OVERRIDE
-                      </h3>
-                      <h1 className="font-serif-display text-5xl md:text-7xl lg:text-[6rem] text-[#E8E8E1] tracking-tighter leading-[0.9] uppercase mix-blend-difference">
-                        DIGITAL<br />CRAFTSMAN.
-                      </h1>
+            {/* Quote */}
+            <div data-reveal className="mt-6 flex items-center gap-3 italic text-endfield-dark font-sans bg-white/60 dark:bg-white/5 px-4 py-2.5 border border-endfield-border shadow-sm w-fit">
+              <span className="text-xl font-bold font-serif text-endfield-muted">“</span>
+              <span className="font-medium">大学牲一枚。热爱看番、音乐、交互设计，以及 旮旯干木。</span>
+              <span className="text-xl font-bold font-serif text-endfield-muted">”</span>
+            </div>
+
+            {/* Stats */}
+            <div data-reveal className="mt-8 grid grid-cols-3 gap-3 sm:gap-4 max-w-lg">
+              <a href="https://github.com/LeeKLong" target="_blank" rel="noreferrer" className="block bg-white/80 p-3 sm:p-4 border border-endfield-border hover:border-endfield-dark transition-all cursor-pointer group">
+                <div className="text-3xl sm:text-4xl font-black font-tech text-endfield-dark group-hover:text-endfield-yellowDark transition-colors">
+                  {reposCount}
+                </div>
+                <div className="text-[10px] sm:text-xs font-bold text-endfield-muted mt-1 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-endfield-dark"></span> 仓库 / 项目数</div>
+              </a>
+              <div className="bg-white/80 p-3 sm:p-4 border border-endfield-border hover:border-endfield-dark transition-all">
+                <div className="text-3xl sm:text-4xl font-black font-tech text-endfield-dark">91</div>
+                <div className="text-[10px] sm:text-xs font-bold text-endfield-muted mt-1 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-endfield-yellow border border-endfield-dark"></span> 武器 / 技术栈</div>
+              </div>
+              <div className="bg-white/80 p-3 sm:p-4 border border-endfield-border hover:border-endfield-dark transition-all">
+                <div className="text-3xl sm:text-4xl font-black font-tech text-endfield-dark">
+                  {commitsCount}
+                </div>
+                <div className="text-[10px] sm:text-xs font-bold text-endfield-muted mt-1 flex items-center gap-1"><span className="w-1.5 h-1.5 bg-neutral-400 dark:bg-neutral-600"></span> 档案 / 代码提交</div>
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div data-reveal className="mt-8 flex flex-wrap items-center gap-3">
+              <Link to="/archive" className="px-8 py-3 topo-accent-bg border border-endfield-dark text-endfield-dark font-bold hover:bg-endfield-dark hover:text-white transition-all shadow-md flex items-center gap-2 font-tech text-sm">
+                <i className="fa-solid fa-tower-broadcast"></i>
+                <span>进入终端 ENTER TERMINAL</span>
+              </Link>
+              <Link to="/archive" className="px-8 py-3 bg-white border border-endfield-border hover:border-endfield-dark text-endfield-dark font-bold transition-all flex items-center gap-2 font-tech text-sm">
+                <i className="fa-solid fa-cubes-stacked"></i>
+                <span>查看作战记录</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right: Operator Card Preview */}
+          <div data-reveal className="lg:col-span-5 w-full">
+            <a href="https://github.com/LeeKLong" target="_blank" rel="noreferrer" className="block group">
+              <div className="bg-endfield-panel border border-endfield-border shadow-2xl overflow-hidden clip-slash-corner transition-all group-hover:shadow-[0_0_0_2px_#e5fe00]">
+                {/* Card Header Stripe */}
+                <div className="flex items-center justify-between bg-endfield-dark text-endfield-yellow px-4 py-2 font-tech text-[10px] tracking-widest">
+                  <span>[ OPERATOR CARD ]</span>
+                  <span>O.M.V // 2569</span>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="relative w-20 h-20 bg-endfield-dark p-1 shrink-0">
+                      <div className="w-full h-full bg-neutral-200 dark:bg-neutral-800 relative overflow-hidden flex items-center justify-center border border-endfield-yellow">
+                        <img src="/LEEKLONG.svg" className="w-12 h-12 object-contain opacity-90 group-hover:scale-110 transition-transform" alt="Avatar" />
+                        <span className="absolute bottom-1 right-1 bg-endfield-yellow text-endfield-dark font-tech font-bold text-[8px] px-1">O.M.V</span>
+                      </div>
                     </div>
-
-                    <div className="relative pl-6 border-l border-dashed border-[#333] mt-2">
-                      <div className="absolute top-0 left-[-4px] w-2 h-2 bg-[#E8E8E1]" style={{ animation: 'flicker 3s infinite' }}></div>
-                      <div className="font-mono-data text-[#888] text-[12px] md:text-sm leading-relaxed max-w-xl space-y-4">
-                        <p className="text-[#aaa]">&gt; INITIALIZING CORE PROTOCOLS...</p>
-                        <p className="text-[#aaa]">&gt; STATUS: <span className="text-[#E8E8E1]">ONLINE</span></p>
-                        <p className="pt-2">
-                          大学牲一枚。热爱看番、音乐、交互设计，以及 旮旯干木。<br />
-                        </p>
+                    <div className="space-y-1.5">
+                      <div className="text-lg font-black text-endfield-dark">LEEKLONG <span className="text-endfield-muted font-tech text-sm">#2569</span></div>
+                      <div className="flex flex-wrap items-center gap-2 text-[10px] font-tech text-endfield-muted">
+                        <span className="bg-endfield-dark text-white px-2 py-0.5 font-bold">▶▶ 注册日 2026/01/22</span>
+                      </div>
+                      <div className="flex items-center gap-4 font-tech pt-1">
+                        <div>
+                          <div className="text-[9px] text-endfield-muted tracking-wider flex items-center gap-1"><span className="w-1.5 h-1.5 bg-endfield-dark"></span> 权限等级</div>
+                          <div className="text-lg font-bold text-endfield-dark leading-none">60</div>
+                        </div>
+                        <div className="border-l border-endfield-border pl-4">
+                          <div className="text-[9px] text-endfield-muted tracking-wider flex items-center gap-1"><span className="w-1.5 h-1.5 bg-endfield-yellow border border-endfield-dark"></span> 探索等级</div>
+                          <div className="text-lg font-bold text-endfield-dark leading-none">7</div>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* 右侧：HUD 数据化面板 */}
-                  <div className="lg:col-span-5 flex flex-col justify-center gap-8 md:gap-12 z-10 hidden md:flex">
-                    {/* 技能矩阵 */}
-                    <div>
-                      <h3 className="font-mono-data text-[#555] text-[11px] tracking-[0.3em] mb-5">
-                        [ MODULES_LOADED ]
-                      </h3>
-                      <div className="flex flex-col gap-2">
-                        {['REACT // DOM_ENGINE', 'TAILWIND // STYLING', 'TYPESCRIPT // LOGIC', 'CANVAS // FX_RENDER'].map((skill) => (
-                          <div key={skill} className="group relative border border-[#222] bg-[#050505]/50 backdrop-blur-sm p-3 hover:border-[#555] transition-colors cursor-default overflow-hidden">
-                            <div className="absolute inset-0 bg-[#E8E8E1] scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-out z-0"></div>
-                            <span className="relative z-10 font-mono-data text-[11px] tracking-widest text-[#888] group-hover:text-[#050505] transition-colors duration-500">
-                              {skill}
-                            </span>
-                          </div>
-                        ))}
+                  {/* Current Operation */}
+                  <div className="bg-endfield-darkCard text-white p-3 relative overflow-hidden clip-slash-corner border-l-4 border-endfield-yellow shadow-xl">
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#e5fe00_1px,transparent_1px)]" style={{ backgroundSize: '12px 12px' }}></div>
+                    <div className="relative z-10 space-y-1.5">
+                      <div className="text-[9px] font-tech text-endfield-yellow tracking-widest uppercase flex justify-between">
+                        <span>[ CURRENT OPERATION ]</span>
+                        <span>STATUS: ACTIVE</span>
                       </div>
+                      <div className="text-base font-black font-title text-white tracking-wide group-hover:text-endfield-yellow transition-colors">GitHub 主页</div>
+                      <p className="text-[10px] text-slate-300 font-sans">全栈架构开发 / 3D 交互场景设计 / WebGL 高性能图形管线构建中...</p>
                     </div>
+                  </div>
 
-                    {/* 核心指令 */}
-                    <div>
-                      <h3 className="font-mono-data text-[#555] text-[11px] tracking-[0.3em] mb-5">
-                        [ CURRENT_DIRECTIVES ]
-                      </h3>
-                      <ul className="space-y-6">
-                        <li className="flex items-start gap-4 group">
-                          <span className="text-[#E8E8E1] font-mono-data text-sm mt-0.5">01</span>
-                          <p className="font-serif-display text-[#888] group-hover:text-[#ccc] transition-colors text-base md:text-lg leading-snug">
-                            Exploring boundaries of physical interactions.
-                          </p>
-                        </li>
-                      </ul>
-                    </div>
+                  {/* Card Footer */}
+                  <div className="flex items-center justify-between font-tech text-[10px] text-endfield-muted pt-1">
+                    <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-endfield-yellow animate-pulse"></span> TERMINAL ONLINE</span>
+                    <span className="text-endfield-dark font-bold group-hover:text-endfield-yellow transition-colors">访问 GITHUB <i className="fa-solid fa-arrow-right text-[9px]"></i></span>
                   </div>
                 </div>
-              ) : (
-                /* === 第二+张卡片：文章卡 === */
-                <article className="w-full max-w-6xl h-full max-h-[70vh] flex flex-col md:flex-row items-stretch bg-[#050505]/80 backdrop-blur-md border border-[#1a1a1a] group relative shadow-2xl">
-                  {/* Full Card Link Overlay */}
-                  {currentItem.url.startsWith('http') ? (
-                    <a href={currentItem.url} target="_blank" rel="noreferrer" className="absolute inset-0 z-20">
-                      <span className="sr-only">Go to {currentItem.title}</span>
-                    </a>
-                  ) : (
-                    <Link to={currentItem.url} className="absolute inset-0 z-20">
-                      <span className="sr-only">Go to {currentItem.title}</span>
-                    </Link>
-                  )}
-
-                  {/* Left: Image (Hero Style) */}
-                  <div className="w-full h-48 md:h-auto md:w-1/2 relative overflow-hidden border-b md:border-b-0 md:border-r border-[#1a1a1a] shrink-0">
-                    <div className="absolute inset-0 border border-[#111] group-hover:border-[#444] z-20 transition-colors duration-700 pointer-events-none"></div>
-                    <div className="absolute left-0 right-0 h-32 bg-noise mix-blend-overlay z-30 opacity-0 group-hover:opacity-100 pointer-events-none fx-scanline"></div>
-                    <div className="absolute left-0 right-0 h-[1px] bg-white/40 z-30 opacity-0 group-hover:opacity-100 pointer-events-none fx-flicker"></div>
-                    <div className="absolute top-0 left-1/2 w-[1px] h-full bg-white opacity-0 mix-blend-overlay z-30 pointer-events-none fx-scratch"></div>
-
-                    {currentItem.hasCustomImage ? (
-                      <img
-                        src={currentItem.imageUrl}
-                        alt={currentItem.title}
-                        className={`w-full h-full object-cover opacity-60 transition-all duration-[2s] ease-out
-                          ${currentItem.type === 'LIFE_LOG' ? 'grayscale contrast-125 group-hover:grayscale-0' : 'sepia-[.8] hue-rotate-[180deg] saturate-50 group-hover:saturate-100'} 
-                          group-hover:opacity-100 group-hover:scale-[1.05]`}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col justify-center items-center p-8 text-center bg-[#080808] opacity-80 group-hover:opacity-100 group-hover:scale-[1.05] transition-all duration-[2s] ease-out relative">
-                        <div className="absolute inset-0 opacity-[0.15]" style={{ backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-                        <h4 className="font-serif-display text-3xl md:text-4xl text-[#E8E8E1] mb-4 z-10">{currentItem.title}</h4>
-                        <div className="w-12 h-[1px] bg-[#555] my-4 z-10"></div>
-                        <p className="font-mono-data text-[10px] md:text-[12px] text-[#888] tracking-widest uppercase z-10">{currentItem.subtitle}</p>
-                      </div>
-                    )}
-                    
-                    <div className="absolute top-6 left-6 z-40 font-mono-data text-[10px] md:text-[11px] tracking-widest bg-black/90 text-[#E8E8E1] px-4 py-2 border border-[#333] backdrop-blur-sm">
-                      {currentItem.type}
-                    </div>
-                  </div>
-
-                  {/* Right: Content details */}
-                  <div className="w-full md:w-1/2 flex flex-col p-6 md:p-12 relative z-10 bg-[#050505]/60 overflow-y-auto swipe-ignore">
-                    <div className="font-mono-data text-[10px] md:text-[11px] tracking-[0.2em] text-[#555] mb-4 md:mb-6 flex items-center justify-between">
-                      <span>ID: {currentItem.id}</span>
-                      <span className={`flex items-center gap-2 ${currentItem.status === 'ONLINE' ? 'text-[#a3c2a4]' : (currentItem.status === 'EXPERIMENTAL' ? 'text-[#c2a381]' : 'text-[#666]')}`}>
-                        <span className={`w-2 h-2 rounded-full ${currentItem.status === 'ONLINE' ? 'bg-[#a3c2a4]' : (currentItem.status === 'EXPERIMENTAL' ? 'bg-[#c2a381]' : 'bg-[#666]')} animate-pulse`}></span>
-                        {currentItem.status}
-                      </span>
-                    </div>
-
-                    <h3 className="font-serif-display text-2xl md:text-4xl text-[#C4C4BA] mb-4 group-hover:text-[#E8E8E1] transition-colors duration-700 tracking-wide line-clamp-2 leading-tight">
-                      {currentItem.title}
-                    </h3>
-
-                    <div className="font-mono-data text-[10px] md:text-[12px] tracking-[0.2em] text-[#666] mb-8 uppercase">
-                      {currentItem.subtitle}
-                    </div>
-
-                    <p className="font-serif-display text-sm md:text-base text-[#777] leading-relaxed mb-8 opacity-90 text-justify line-clamp-4 md:line-clamp-6 flex-grow">
-                      {currentItem.excerpt}
-                    </p>
-
-                    <div className="flex items-center justify-between font-mono-data text-[11px] tracking-[0.2em] mt-auto pt-6 border-t border-[#1a1a1a] relative z-30 pointer-events-auto">
-                      <span className="text-[#444]">{currentItem.date}</span>
-                      {currentItem.url.startsWith('http') ? (
-                        <a href={currentItem.url} target="_blank" rel="noreferrer" className="text-[#888] hover:text-[#E8E8E1] flex items-center gap-3 group/btn transition-colors duration-300">
-                          ACCESS
-                          <span className="w-6 h-[1px] bg-[#555] group-hover/btn:w-12 group-hover/btn:bg-[#E8E8E1] transition-all duration-500"></span>
-                        </a>
-                      ) : (
-                        <Link to={currentItem.url} className="text-[#888] hover:text-[#E8E8E1] flex items-center gap-3 group/btn transition-colors duration-300">
-                          ACCESS
-                          <span className="w-6 h-[1px] bg-[#555] group-hover/btn:w-12 group-hover/btn:bg-[#E8E8E1] transition-all duration-500"></span>
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-
-      {/* Pagination Indicator */}
-      <div className={`absolute bottom-16 md:bottom-20 right-6 md:right-12 z-[110] font-mono-data text-[11px] tracking-widest text-[#555] flex items-center gap-4 ${fadeClass}`} style={{ animationDelay: isFirstLoad ? '1.2s' : '0s' }}>
-        <span>{String(activeIndex + 1).padStart(2, '0')}</span>
-        <div className="w-20 md:w-32 h-[1px] bg-[#222] relative overflow-hidden">
-           <motion.div 
-             className="absolute top-0 left-0 h-full bg-[#E8E8E1]"
-             initial={{ width: 0 }}
-             animate={{ width: `${((activeIndex + 1) / Math.max(1, displayItems.length)) * 100}%` }}
-             transition={{ duration: 0.5, ease: 'easeOut' }}
-           />
+              </div>
+            </a>
+          </div>
         </div>
-        <span>{String(displayItems.length).padStart(2, '0')}</span>
-      </div>
 
-      {/* Footer / Rec Bar */}
-      <div className="hidden md:flex absolute bottom-0 left-0 right-0 h-10 md:h-12 bg-[#000] z-[110] border-t border-[#111] justify-between items-center px-6 md:px-10">
-        <span className="font-mono-data text-[9px] md:text-[10px] text-[#444] tracking-[0.3em] block" style={{ animation: 'flicker 4s infinite' }}>REC ◉ 24 FPS</span>
-        <span className="font-mono-data text-[9px] md:text-[10px] text-[#444] tracking-[0.3em] block">MASTER DIR // HYBRID ARCHIVE</span>
-      </div>
-    </div>
+        {/* Tech Ticker */}
+        <div data-reveal className="relative border-y border-endfield-border bg-endfield-dark text-endfield-yellow font-tech text-[11px] tracking-[0.2em] overflow-hidden select-none">
+          <div className="ticker-track py-2">
+            <span className="flex items-center gap-6 pr-6">
+              <span>REACT</span><span>▮</span><span>NEXT.JS</span><span>▮</span><span>TYPESCRIPT</span><span>▮</span><span>THREE.JS</span><span>▮</span><span>WEBGL</span><span>▮</span><span>TAILWIND</span><span>▮</span><span>GSAP</span><span>▮</span><span>NODE.JS</span><span>▮</span><span>SHADER</span><span>▮</span><span>WEB AUDIO</span><span>▮</span>
+            </span>
+            <span className="flex items-center gap-6 pr-6">
+              <span>REACT</span><span>▮</span><span>NEXT.JS</span><span>▮</span><span>TYPESCRIPT</span><span>▮</span><span>THREE.JS</span><span>▮</span><span>WEBGL</span><span>▮</span><span>TAILWIND</span><span>▮</span><span>GSAP</span><span>▮</span><span>NODE.JS</span><span>▮</span><span>SHADER</span><span>▮</span><span>WEB AUDIO</span><span>▮</span><span>都不会只是个装饰</span>
+            </span>
+          </div>
+        </div>
+      </section>
+    </main>
   );
-};
-
-export default Home;
+}

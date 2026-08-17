@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
@@ -15,8 +16,9 @@ dist-ssr
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
@@ -31,16 +33,28 @@ dist-ssr
 .env.test.local
 .env.production.local
 
-# Build output
+# Build output & cache
 coverage/
 .turbo/
 build/
 out/
+.cache/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+*.pem
+.eslintcache
 
-# OS/System files
-.DS_Store
-Thumbs.db
-
-# Agent/AI tools
+# AI / Agent tools
 .agents/
 .cursor/
+.gemini/
+.antigravity/
+.cline/
+
+# Temporary / Scratch files
+scratch_*
+scratch/
+*.scratch.*
+
+# Docs
+docs/

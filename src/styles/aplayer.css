@@ -1,0 +1,58 @@
+/* APlayer 音乐播放器定制与收起逻辑 */
+.aplayer { z-index: 9999 !important; }
+.aplayer.aplayer-fixed .aplayer-body { transition: transform 0.3s ease !important; }
+.aplayer.hide-cover .aplayer-body { transform: translateX(-66px) !important; }
+
+@media (max-width: 768px) {
+    .aplayer.aplayer-fixed:not(.aplayer-narrow) .aplayer-info { display: block !important; }
+    .aplayer.aplayer-fixed:not(.aplayer-narrow) .aplayer-list { display: block !important; }
+}
+
+/* 匹配 ENDFIELD 风格的 APlayer 覆盖样式 */
+.aplayer .aplayer-info .aplayer-music { color: #1a2228; font-family: 'Space Grotesk', monospace; }
+.aplayer .aplayer-info .aplayer-author { color: #7a8b9e; }
+.aplayer .aplayer-info .aplayer-controller .aplayer-time { color: #7a8b9e; }
+.aplayer .aplayer-bar-wrap .aplayer-bar .aplayer-loaded { background: #eef2f5; }
+.aplayer .aplayer-bar-wrap .aplayer-bar .aplayer-played,
+.aplayer .aplayer-bar-wrap .aplayer-bar .aplayer-played .aplayer-thumb,
+.aplayer .aplayer-volume-bar-wrap .aplayer-volume-bar .aplayer-volume { background: #e5fe00; }
+.aplayer .aplayer-volume-bar-wrap .aplayer-volume-bar { background: #eef2f5; }
+.aplayer .aplayer-icon-play, .aplayer .aplayer-icon-pause { background: #e5fe00; color: #141414; border-radius: 50%; }
+.aplayer .aplayer-icon-play path, .aplayer .aplayer-icon-pause path { fill: #141414; }
+.aplayer.aplayer-fixed .aplayer-miniswitcher { background: #e5fe00; color: #141414; }
+.aplayer .aplayer-lrc { display: none !important; }
+.aplayer .aplayer-list { background: #f8fafc; border-color: #d2dbe2; }
+.aplayer .aplayer-list ol li { background: #f8fafc; color: #7a8b9e; border-color: #eef2f5; }
+.aplayer .aplayer-list ol li:hover { background: #eef2f5; }
+.aplayer .aplayer-list ol li.aplayer-list-light { background: #ffffff; color: #1a2228; }
+.aplayer .aplayer-list ol li .aplayer-list-index { color: #7a8b9e; }
+.aplayer .aplayer-list ol li .aplayer-list-author { color: #7a8b9e; }
+.aplayer .aplayer-list ol li .aplayer-list-title { color: #1a2228; }
+.aplayer .aplayer-list ol li .aplayer-list-cur { background: #e5fe00; }
+.aplayer .aplayer-body { background: #ffffff !important; }
+.aplayer.aplayer-fixed .aplayer-info { border-top-color: #d2dbe2; }
+.aplayer.aplayer-fixed .aplayer-list { border-color: #d2dbe2; }
+.aplayer .aplayer-list ol::-webkit-scrollbar-thumb { background-color: #d2dbe2; }
+.aplayer .aplayer-list ol::-webkit-scrollbar-thumb:hover { background-color: #7a8b9e; }
+.aplayer .aplayer-miniswitcher .aplayer-icon path { fill: #141414; }
+.aplayer .aplayer-miniswitcher .aplayer-icon:hover path { fill: #000000; }
+
+body.dark-mode .aplayer, html.dark .aplayer { background: #141414; color: #e5e5e5; border-color: #2a2a2a; }
+body.dark-mode .aplayer .aplayer-info .aplayer-music, html.dark .aplayer .aplayer-info .aplayer-music { color: #f5f5f5; }
+body.dark-mode .aplayer .aplayer-info .aplayer-author, html.dark .aplayer .aplayer-info .aplayer-author { color: #9a9a9a; }
+body.dark-mode .aplayer .aplayer-info .aplayer-controller .aplayer-time, html.dark .aplayer .aplayer-info .aplayer-controller .aplayer-time { color: #9a9a9a; }
+body.dark-mode .aplayer .aplayer-bar-wrap .aplayer-bar .aplayer-loaded, html.dark .aplayer .aplayer-bar-wrap .aplayer-bar .aplayer-loaded { background: #4a4a4a; }
+body.dark-mode .aplayer .aplayer-volume-bar-wrap .aplayer-volume-bar, html.dark .aplayer .aplayer-volume-bar-wrap .aplayer-volume-bar { background: #444444; }
+body.dark-mode .aplayer .aplayer-list, html.dark .aplayer .aplayer-list { background: #181818; border-color: #2a2a2a; }
+body.dark-mode .aplayer .aplayer-list ol li, html.dark .aplayer .aplayer-list ol li { background: #181818; color: #9a9a9a; border-color: #232323; }
+body.dark-mode .aplayer .aplayer-list ol li:hover, html.dark .aplayer .aplayer-list ol li:hover { background: #232323; }
+body.dark-mode .aplayer .aplayer-list ol li.aplayer-list-light, html.dark .aplayer .aplayer-list ol li.aplayer-list-light { background: #2a2a2a; color: #e5fe00; }
+body.dark-mode .aplayer .aplayer-list ol li .aplayer-list-index, html.dark .aplayer .aplayer-list ol li .aplayer-list-index { color: #787878; }
+body.dark-mode .aplayer .aplayer-list ol li .aplayer-list-author, html.dark .aplayer .aplayer-list ol li .aplayer-list-author { color: #787878; }
+body.dark-mode .aplayer .aplayer-list ol li .aplayer-list-title, html.dark .aplayer .aplayer-list ol li .aplayer-list-title { color: #d5d5d5; }
+body.dark-mode .aplayer .aplayer-body, html.dark .aplayer .aplayer-body { background: #141414 !important; }
+body.dark-mode .aplayer.aplayer-fixed .aplayer-info, html.dark .aplayer.aplayer-fixed .aplayer-info { border-top-color: #2a2a2a; }
+body.dark-mode .aplayer.aplayer-fixed .aplayer-list, html.dark .aplayer.aplayer-fixed .aplayer-list { border-color: #2a2a2a; }
+body.dark-mode .aplayer .aplayer-list ol::-webkit-scrollbar-thumb, html.dark .aplayer .aplayer-list ol::-webkit-scrollbar-thumb { background-color: #3a3a3a; }
+body.dark-mode .aplayer .aplayer-list ol::-webkit-scrollbar-thumb:hover, html.dark .aplayer .aplayer-list ol::-webkit-scrollbar-thumb:hover { background-color: #555555; }
+
