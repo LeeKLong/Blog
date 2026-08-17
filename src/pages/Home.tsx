@@ -96,7 +96,7 @@ export default function Home() {
                   <div className="flex items-center gap-4">
                     <div className="relative w-20 h-20 bg-endfield-dark p-1 shrink-0">
                       <div className="w-full h-full bg-neutral-200 dark:bg-neutral-800 relative overflow-hidden flex items-center justify-center border border-endfield-yellow">
-                        <img src="/LEEKLONG.svg" className="w-12 h-12 object-contain opacity-90 group-hover:scale-110 transition-transform" alt="Avatar" />
+                        <img src={`${import.meta.env.BASE_URL}LEEKLONG.svg`} className="w-12 h-12 object-contain opacity-90 group-hover:scale-110 transition-transform" alt="Avatar" />
                         <span className="absolute bottom-1 right-1 bg-endfield-yellow text-endfield-dark font-tech font-bold text-[8px] px-1">O.M.V</span>
                       </div>
                     </div>

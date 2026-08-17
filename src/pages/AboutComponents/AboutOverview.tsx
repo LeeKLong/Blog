@@ -31,7 +31,7 @@ export default function AboutOverview({ isActive, onCopyUID, isMasked }: AboutOv
           {/* Avatar with Endfield Yellow Framing */}
           <div className="relative w-24 h-24 sm:w-28 sm:h-28 bg-endfield-dark p-1 shadow-lg shrink-0 group">
             <div className="w-full h-full bg-neutral-200 dark:bg-neutral-800 relative overflow-hidden flex items-center justify-center border border-endfield-yellow">
-              <img src="/LEEKLONG.svg" className="w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-90 group-hover:scale-110 transition-transform" alt="Avatar" />
+              <img src={`${import.meta.env.BASE_URL}LEEKLONG.svg`} className="w-16 h-16 sm:w-20 sm:h-20 object-contain opacity-90 group-hover:scale-110 transition-transform" alt="Avatar" />
               <span className="absolute bottom-1 right-1 bg-endfield-yellow text-endfield-dark font-tech font-bold text-[9px] px-1">O.M.V</span>
             </div>
             <div className="absolute -top-1.5 -right-1.5 bg-endfield-yellow text-endfield-dark text-[10px] font-tech font-bold px-1 border border-endfield-dark">

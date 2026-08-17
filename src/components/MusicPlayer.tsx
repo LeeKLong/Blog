@@ -46,7 +46,7 @@ export default function MusicPlayer() {
               name: '音乐接口超时 (Network Error)',
               artist: '系统提示',
               url: '',
-              cover: '/LEEKLONG.svg'
+              cover: `${import.meta.env.BASE_URL}LEEKLONG.svg`
             }]
           });
         }

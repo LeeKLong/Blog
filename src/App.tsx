@@ -10,6 +10,7 @@ import BootScreen from './components/BootScreen';
 import Crosshair from './components/Crosshair';
 import TopoCanvas from './components/TopoCanvas';
 import MusicPlayer from './components/MusicPlayer';
+import NoticeModal from './components/NoticeModal';
 import { ThemeProvider } from './context/ThemeContext';
 
 function AppContent() {
@@ -46,6 +47,7 @@ function AppContent() {
   return (
     <>
       {booting && <BootScreen onComplete={handleBootComplete} />}
+      <NoticeModal booting={booting} />
       <TopoCanvas />
       <Crosshair />
       <Header />
